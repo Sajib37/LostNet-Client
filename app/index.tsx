@@ -1,146 +1,194 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
+import { useNavigation } from "expo-router";
 import React, { useState } from "react";
 import {
-    ImageBackground,
-    StatusBar,
+    FlatList,
+    Image,
+    Modal,
+    Pressable,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
 
-export default function LoginScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+const fakeIcons = [
+    {
+        title: "Available Foods",
+        icon: require("../assets/icons/ready-stock.png"),
+    },
+    {
+        title: "Add Food",
+        icon: require("../assets/icons/add-to-cart.png"),
+    },
+    {
+        title: "Monitor own Food",
+        icon: require("../assets/icons/monitor.png"),
+    },
+    {
+        title: "Request For food",
+        icon: require("../assets/icons/request.png"),
+    },
+];
+
+const DashboardScreen = () => {
+    const navigation = useNavigation();
+    const [menuVisible, setMenuVisible] = useState(false);
+
+    const handleMenuSelect = (action: string) => {
+        setMenuVisible(false);
+        if (action === "logout") {
+            // logout logic here
+        } else {
+            navigation.navigate(action as never);
+        }
+    };
 
     return (
-        <ImageBackground
-            source={require("../assets/images/login.jpg")}
-            style={styles.background}
-            resizeMode="cover"
-        >
-            <StatusBar barStyle="light-content" />
-
-            <BlurView intensity={50} tint="light" style={styles.card}>
-                <Text style={styles.title}>Welcome Back</Text>
-
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="email-outline"
-                        size={20}
-                        color="#5C6AC4"
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Dashboard</Text>
+                <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                    <Image
+                        source={require("../assets/images/register.jpg")} // fake profile picture
+                        style={styles.profileImage}
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        placeholderTextColor="#888"
-                        keyboardType="email-address"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                </View>
-
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="lock-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Password"
-                        placeholderTextColor="#888"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                </View>
-
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
+            </View>
 
-                <Text style={styles.register}>
-                    Don’t have an account?{" "}
-                    <Text style={styles.link}>Register</Text>
-                </Text>
-            </BlurView>
-        </ImageBackground>
+            {/* Dropdown menu */}
+            <Modal transparent visible={menuVisible} animationType="fade">
+                <Pressable
+                    style={styles.overlay}
+                    onPress={() => setMenuVisible(false)}
+                >
+                    <View style={styles.dropdown}>
+                        <TouchableOpacity
+                            onPress={() => handleMenuSelect("profile")}
+                        >
+                            <Text style={styles.menuItem}>Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => handleMenuSelect("update-profile")}
+                        >
+                            <Text style={styles.menuItem}>Update Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => handleMenuSelect("logout")}
+                        >
+                            <Text style={styles.menuItem}>Logout</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
+
+            <View style={{ flex: 1 }}>
+                <FlatList
+                    data={fakeIcons}
+                    numColumns={2}
+                    contentContainerStyle={styles.cardContainer}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <Image
+                                source={item.icon}
+                                style={styles.cardIcon}
+                                resizeMode="cover"
+                            />
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                        </View>
+                    )}
+                    keyExtractor={(_, index) => index.toString()}
+                />
+            </View>
+        </View>
     );
-}
+};
+
+export default DashboardScreen;
 
 const styles = StyleSheet.create({
-    background: {
+    container: {
         flex: 1,
-        width: "100%",
-        height: "100%",
-
+        backgroundColor: "#F3F4F6",
+    },
+    cardTitle: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#374151",
+        marginBottom: 10,
+        textAlign: "center",
+    },
+    header: {
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingHorizontal: 20,
+        backgroundColor: "white",
+        flexDirection: "row",
+        justifyContent: "space-between",
         alignItems: "center",
-        justifyContent: "center",
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#1F2937",
+    },
+    profileImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.3)", // slight dark overlay
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: "flex-start",
+        alignItems: "flex-end",
+        paddingTop: 90,
+        paddingRight: 20,
+        backgroundColor: "rgba(0,0,0,0.1)",
+    },
+    dropdown: {
+        width: 160,
+        backgroundColor: "white",
+        borderRadius: 10,
+        paddingVertical: 10,
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 3 },
+    },
+    menuItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        fontSize: 16,
+        color: "#374151",
+    },
+    cardContainer: {
         padding: 20,
+        flexGrow:1,
+        justifyContent:"center"
     },
     card: {
-        width: "90%",
-        borderRadius: 20,
-        padding: 24,
-        overflow: "hidden", // Required for BlurView rounding
-        shadowColor: "#000",
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 4 },
-        shadowRadius: 10,
-        elevation: 6,
-        backgroundColor: "rgba(255, 255, 255, 0.2)", // fallback
-    },
-
-    title: {
-        fontSize: 26,
-        fontWeight: "700",
-        color: "#2C7BE5",
-        marginBottom: 20,
-        textAlign: "center",
-    },
-    inputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#F0F2F5",
-        borderRadius: 30,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        paddingVertical: 10,
-    },
-    input: {
         flex: 1,
-        fontSize: 16,
-        color: "#333",
-        marginLeft: 10,
-    },
-    button: {
-        backgroundColor: "#2C7BE5",
-        paddingVertical: 14,
-        borderRadius: 30,
+        aspectRatio: 1,
+        margin: 10,
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
         alignItems: "center",
-        marginTop: 10,
+        justifyContent: "center",
     },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    register: {
-        textAlign: "center",
-        marginTop: 16,
-        color: "#444",
-    },
-    link: {
-        color: "#2C7BE5",
-        fontWeight: "bold",
+    cardIcon: {
+        width: "80%",
+        height: "80%",
+        borderRadius: 15,
     },
 });
