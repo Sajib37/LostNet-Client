@@ -10,12 +10,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import {useProtectedRoute} from "../hooks/useProtectedRoute"
+import Loader from "../components/ui/loader"
 
 const Index = () => {
+    const { authLoading } = useProtectedRoute();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-
     useEffect(() => {
         const fetchItems = async () => {
             try {
@@ -31,6 +33,10 @@ const Index = () => {
 
         fetchItems();
     }, []);
+
+        if (authLoading) {
+        return <Loader/>
+    }
 
     const renderCard = ({ item }) => (
         <View style={styles.card}>

@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     ImageBackground,
@@ -11,67 +11,101 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function LoginScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-    return (
-        <ImageBackground
-            source={require("../assets/images/login.jpg")}
-            style={styles.background}
-            resizeMode="cover"
-        >
-            <StatusBar barStyle="light-content" />
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Toast.show({ type: "error", text1: "Missing Fields", text2: "Email and password required" });
+      return;
+    }
 
-            <BlurView intensity={50} tint="light" style={styles.card}>
-                <Text style={styles.title}>Welcome Back</Text>
+    try {
+      const response = await axios.post("http://localhost:5000/api/v1/users/login", {
+        email,
+        password,
+      });
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="email-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        placeholderTextColor="#888"
-                        keyboardType="email-address"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                </View>
+      const token = response?.data?.data?.accessToken;
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="lock-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Password"
-                        placeholderTextColor="#888"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                </View>
+      if (token) {
+        await AsyncStorage.setItem("accessToken", token);
 
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
+        Toast.show({
+          type: "success",
+          text1: "Login Successful 🎉",
+          text2: "Welcome back!",
+        });
 
-                <Text style={styles.register}>
-                    Don&apos;t have an account?
-                    <TouchableOpacity onPress={() => router.push("/signup")}>
-                        <Text style={styles.link}>Register</Text>
-                    </TouchableOpacity>
-                </Text>
-            </BlurView>
-        </ImageBackground>
-    );
+        setTimeout(() => {
+          router.replace("/");
+        }, 1000);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Login Failed",
+          text2: "No token received",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: "Invalid credentials",
+      });
+    }
+  };
+
+  return (
+    <ImageBackground source={require("../assets/images/login.jpg")} style={styles.background} resizeMode="cover">
+      <StatusBar barStyle="light-content" />
+      <BlurView intensity={50} tint="light" style={styles.card}>
+        <Text style={styles.title}>Welcome Back</Text>
+
+        <View style={styles.inputWrapper}>
+          <MaterialCommunityIcons name="email-outline" size={20} color="#5C6AC4" />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#888"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <MaterialCommunityIcons name="lock-outline" size={20} color="#5C6AC4" />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.register}>
+          Don&apos;t have an account?
+          <TouchableOpacity onPress={() => router.push("/signup")}>
+            <Text style={styles.link}> Register</Text>
+          </TouchableOpacity>
+        </Text>
+      </BlurView>
+    </ImageBackground>
+  );
 }
 
 const styles = StyleSheet.create({

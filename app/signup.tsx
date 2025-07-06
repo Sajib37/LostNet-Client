@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
 import React, { useState } from "react";
 import {
+    Alert,
     ImageBackground,
     StatusBar,
     StyleSheet,
@@ -12,12 +12,58 @@ import {
     View,
 } from "react-native";
 
-export default function LoginScreen() {
-    const navigation = useNavigation();
+import axios from "axios";
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+
+export default function RegisterScreen() {
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleRegister = async () => {
+        if (!firstName || !lastName || !email || !password) {
+            Alert.alert("Error", "Please fill all fields.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await axios.post(
+                "http://localhost:5000/api/v1/users/register",
+                {
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                }
+            );
+            console.log(response);
+            if (response?.status === 200 || response?.status === 201) {
+                Toast.show({
+                    type: "success",
+                    text1: "Account Created !",
+                    text2: "You can now log in",
+                });
+
+                setTimeout(() => {
+                    router.replace("/login");
+                }, 1000);
+            }
+        } catch (error) {
+            Toast.show({
+                type: "error",
+                text1: "Registration Failed",
+                text2: "Try again later",
+            });
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <ImageBackground
@@ -28,75 +74,80 @@ export default function LoginScreen() {
             <StatusBar barStyle="light-content" />
 
             <BlurView intensity={50} tint="light" style={styles.card}>
-  <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.title}>Create Account</Text>
 
-  <View style={styles.inputWrapper}>
-    <MaterialCommunityIcons
-      name="account-outline"
-      size={20}
-      color="#5C6AC4"
-    />
-    <TextInput
-      style={styles.input}
-      placeholder="First Name"
-      placeholderTextColor="#888"
-      value={firstName}
-      onChangeText={setFirstName}
-    />
-  </View>
+                <View style={styles.inputWrapper}>
+                    <MaterialCommunityIcons
+                        name="account-outline"
+                        size={20}
+                        color="#5C6AC4"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="First Name"
+                        placeholderTextColor="#888"
+                        value={firstName}
+                        onChangeText={setFirstName}
+                    />
+                </View>
 
-  <View style={styles.inputWrapper}>
-    <MaterialCommunityIcons
-      name="account-outline"
-      size={20}
-      color="#5C6AC4"
-    />
-    <TextInput
-      style={styles.input}
-      placeholder="Last Name"
-      placeholderTextColor="#888"
-      value={lastName}
-      onChangeText={setLastName}
-    />
-  </View>
+                <View style={styles.inputWrapper}>
+                    <MaterialCommunityIcons
+                        name="account-outline"
+                        size={20}
+                        color="#5C6AC4"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Last Name"
+                        placeholderTextColor="#888"
+                        value={lastName}
+                        onChangeText={setLastName}
+                    />
+                </View>
 
-  <View style={styles.inputWrapper}>
-    <MaterialCommunityIcons
-      name="email-outline"
-      size={20}
-      color="#5C6AC4"
-    />
-    <TextInput
-      style={styles.input}
-      placeholder="Email"
-      placeholderTextColor="#888"
-      keyboardType="email-address"
-      value={email}
-      onChangeText={setEmail}
-    />
-  </View>
+                <View style={styles.inputWrapper}>
+                    <MaterialCommunityIcons
+                        name="email-outline"
+                        size={20}
+                        color="#5C6AC4"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        placeholderTextColor="#888"
+                        keyboardType="email-address"
+                        value={email}
+                        onChangeText={setEmail}
+                    />
+                </View>
 
-  <View style={styles.inputWrapper}>
-    <MaterialCommunityIcons
-      name="lock-outline"
-      size={20}
-      color="#5C6AC4"
-    />
-    <TextInput
-      style={styles.input}
-      placeholder="Password"
-      placeholderTextColor="#888"
-      secureTextEntry
-      value={password}
-      onChangeText={setPassword}
-    />
-  </View>
+                <View style={styles.inputWrapper}>
+                    <MaterialCommunityIcons
+                        name="lock-outline"
+                        size={20}
+                        color="#5C6AC4"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        placeholderTextColor="#888"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                </View>
 
-  <TouchableOpacity style={styles.button}>
-    <Text style={styles.buttonText}>Register</Text>
-  </TouchableOpacity>
-</BlurView>
-
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleRegister}
+                    disabled={loading}
+                >
+                    <Text style={styles.buttonText}>
+                        {loading ? "Registering..." : "Register"}
+                    </Text>
+                </TouchableOpacity>
+            </BlurView>
         </ImageBackground>
     );
 }
