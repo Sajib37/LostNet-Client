@@ -33,7 +33,7 @@ export default function RegisterScreen() {
         try {
             setLoading(true);
             const response = await axios.post(
-                "http://localhost:5000/api/v1/users/register",
+                "http://192.168.0.102:5000/api/v1/users/register",
                 {
                     firstName,
                     lastName,

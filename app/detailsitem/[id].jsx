@@ -12,10 +12,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/ui/header";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
+import ItemRequestsList from "../../components/ui/ItemRequestsList";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -42,48 +39,6 @@ export default function SingleItemScreen() {
         fetchItem();
     }, [id]);
 
-    const handleRequest = async (itemId) => {
-        try {
-            const token = await AsyncStorage.getItem("accessToken");
-            if (!token) {
-                Alert.alert("Unauthorized", "Please login to request item.");
-                return;
-            }
-
-            const decoded = jwtDecode(token);
-            const requestedBy = decoded?.id;
-
-            if (!requestedBy) {
-                Alert.alert("Error", "User ID not found.");
-                return;
-            }
-
-            const payload = {
-                itemId,
-                requestedBy,
-            };
-
-            await axios.post(
-                "http://192.168.0.102:5000/api/v1/item-request",
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // optional, if backend requires auth
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            Toast.show({
-                type: "success",
-                text1: "Request Sent",
-                text2: "You have requested this item.",
-            });
-        } catch (error) {
-            console.error("Request failed:", error);
-            Alert.alert("Error", "Failed to send request. Try again.");
-        }
-    };
 
     if (loading) {
         return (
@@ -134,15 +89,9 @@ export default function SingleItemScreen() {
                     </Text>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => handleRequest(id)}
-                >
-                    <Text style={styles.requestButtonText}>
-                        Request This Item
-                    </Text>
-                </TouchableOpacity>
-            </ScrollView>
+               <ItemRequestsList itemId={id} />
+
+             </ScrollView>
         </View>
     );
 }

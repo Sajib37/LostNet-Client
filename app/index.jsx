@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import Header from "../components/ui/header"
 import {
     ActivityIndicator,
     FlatList,
@@ -10,8 +9,9 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import {useProtectedRoute} from "../hooks/useProtectedRoute"
-import Loader from "../components/ui/loader"
+import Header from "../components/ui/header";
+import Loader from "../components/ui/loader";
+import { useProtectedRoute } from "../hooks/useProtectedRoute";
 
 const Index = () => {
     const { authLoading } = useProtectedRoute();
@@ -21,7 +21,9 @@ const Index = () => {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/v1/item");
+                const res = await fetch(
+                    "http://192.168.0.102:5000/api/v1/item"
+                );
                 const json = await res.json();
                 setItems(json?.data || []);
             } catch (err) {
@@ -34,8 +36,8 @@ const Index = () => {
         fetchItems();
     }, []);
 
-        if (authLoading) {
-        return <Loader/>
+    if (authLoading) {
+        return <Loader />;
     }
 
     const renderCard = ({ item }) => (
@@ -62,7 +64,7 @@ const Index = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <Header title="Founded items"/>
+            <Header title="Founded items" />
 
             <FlatList
                 data={items}
@@ -79,7 +81,6 @@ const Index = () => {
 export default Index;
 
 const styles = StyleSheet.create({
-
     container: {
         paddingHorizontal: 12,
         paddingBottom: 16,
