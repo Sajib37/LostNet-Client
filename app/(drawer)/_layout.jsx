@@ -60,7 +60,8 @@ export default function DrawerLayout() {
       <Drawer.Screen name="profile" options={{ title: 'My Profile' }} />
       <Drawer.Screen name="updateprofile" options={{ title: 'Update Your Info' }} />
       <Drawer.Screen name="additem" options={{ title: 'Add Found Item' }} />
-      <Drawer.Screen name="uploadeditems" options={{ title: 'Your Uploaded Items' }} />
+      <Drawer.Screen name="uploadeditems" options={{ title: 'My Uploaded Items' }} />
+      <Drawer.Screen name="myrequests" options={{ title: 'My Requested Items' }} />
     </Drawer>
   );
 }

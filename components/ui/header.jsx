@@ -1,11 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
-import ProfileMenu from "./profilemenu"
+import { StyleSheet,View } from "react-native";
+
 
 const Header = ({title}) => {
     return (
         <View style={styles.header}>
-            <Text style={styles.headerTitle}>LostNet</Text>
-            <ProfileMenu/>
+
         </View>
     );
 };
@@ -14,8 +13,8 @@ export default Header;
 
 const styles = StyleSheet.create({
     header: {
-        paddingTop: 70,
-        paddingBottom: 10,
+        paddingTop: 30,
+        paddingBottom: 20,
         paddingHorizontal: 16,
         marginBottom: 15,
         flexDirection: "row",
@@ -23,7 +22,7 @@ const styles = StyleSheet.create({
         alignItems:"center",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.05,
         shadowRadius: 4,
         elevation: 4,
     },
