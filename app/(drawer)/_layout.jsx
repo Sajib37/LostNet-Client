@@ -1,0 +1,106 @@
+import { Drawer } from 'expo-router/drawer';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import useFetchUser from '../../hooks/useFetchUser';
+
+export default function DrawerLayout() {
+  const { user, loading } = useFetchUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('accessToken');
+      router.replace('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  return (
+    <Drawer
+      drawerContent={(props) => (
+        <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+          <View>
+            <View style={styles.userContainer}>
+              {loading ? (
+                <ActivityIndicator size="small" />
+              ) : user ? (
+                <>
+                  <Image
+                    source={{
+                      uri: user?.photo || 'https://via.placeholder.com/100',
+                    }}
+                    style={styles.profileImage}
+                  />
+                  <Text style={styles.userName}>
+                    {user?.firstName} {user?.lastName}
+                  </Text>
+                  <Text style={styles.userEmail}>{user?.email}</Text>
+                </>
+              ) : (
+                <Text style={{ textAlign: 'center' }}>User not found</Text>
+              )}
+            </View>
+
+            <DrawerItemList {...props} />
+          </View>
+
+
+          <View style={styles.logoutContainer}>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <Text style={styles.logoutText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
+        </DrawerContentScrollView>
+      )}
+    >
+      <Drawer.Screen name="index" options={{ title: 'Home' }} />
+      <Drawer.Screen name="profile" options={{ title: 'My Profile' }} />
+      <Drawer.Screen name="updateprofile" options={{ title: 'Update Your Info' }} />
+      <Drawer.Screen name="additem" options={{ title: 'Add Found Item' }} />
+      <Drawer.Screen name="uploadeditems" options={{ title: 'Your Uploaded Items' }} />
+    </Drawer>
+  );
+}
+
+const styles = StyleSheet.create({
+  userContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    marginBottom: 10,
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 10,
+    backgroundColor: '#eee',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  logoutContainer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
+  logoutButton: {
+    backgroundColor: '#e74c3c',
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+});

@@ -13,7 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import useFetchUser from "../hooks/useFetchUser";
+import useFetchUser from "../../hooks/useFetchUser";
 import Toast from "react-native-toast-message";
 
 const UpdateProfile = () => {
@@ -194,6 +194,7 @@ const Input = ({
 );
 
 export default UpdateProfile;
+
 
 const styles = StyleSheet.create({
     center: {

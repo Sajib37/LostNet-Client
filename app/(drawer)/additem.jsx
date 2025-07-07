@@ -15,7 +15,6 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../components/ui/header";
 import { Feather } from "@expo/vector-icons";
 
 const AddItemScreen = () => {
@@ -129,7 +128,6 @@ const AddItemScreen = () => {
 
     return (
         <>
-            <Header />
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.card}>
                     <Text style={styles.title}>Add Found Item</Text>

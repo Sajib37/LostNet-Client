@@ -8,9 +8,9 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../components/ui/header";
-import Loader from "../components/ui/loader";
-import useFetchUser from "../hooks/useFetchUser";
+import Header from "../../components/ui/header";
+import Loader from "../../components/ui/loader";
+import useFetchUser from "../../hooks/useFetchUser";
 
 const ProfileScreen = () => {
     const router = useRouter();
@@ -32,7 +32,6 @@ const ProfileScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#F4F6FC" }}>
-            <Header />
 
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.card}>
@@ -58,7 +57,7 @@ const ProfileScreen = () => {
 
                     <TouchableOpacity
                         onPress={() =>
-                            router.push(`/updateprofile/${user._id}`)
+                            router.push(`/updateprofile`)
                         }
                         style={styles.button}
                     >

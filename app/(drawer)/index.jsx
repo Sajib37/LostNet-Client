@@ -9,9 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../components/ui/header";
-import Loader from "../components/ui/loader";
-import { useProtectedRoute } from "../hooks/useProtectedRoute";
+import Loader from "../../components/ui/loader";
+import { useProtectedRoute } from "../../hooks/useProtectedRoute";
 
 const Index = () => {
     const { authLoading } = useProtectedRoute();
@@ -64,8 +63,6 @@ const Index = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <Header title="Founded items" />
-
             <FlatList
                 data={items}
                 numColumns={2}
@@ -73,6 +70,9 @@ const Index = () => {
                 contentContainerStyle={styles.container}
                 columnWrapperStyle={styles.row}
                 renderItem={renderCard}
+                ListHeaderComponent={
+                    <Text style={styles.heading}>Available Founded Items</Text>
+                }
             />
         </View>
     );
@@ -87,6 +87,16 @@ const styles = StyleSheet.create({
     },
     row: {
         justifyContent: "space-between",
+    },
+    heading: {
+        fontSize: 22,
+        fontWeight: "700",
+        color: "#3F51B5", 
+        marginTop: 20,
+        marginBottom: 14,
+        textAlign: "center",
+        fontFamily: "System", 
+        letterSpacing: 0.5,
     },
     card: {
         backgroundColor: "#fff",
