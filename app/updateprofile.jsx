@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import {  useRouter } from "expo-router";
+import {  useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -13,12 +13,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import useFetchUser from "../hooks/useFetchUser";
+import Toast from "react-native-toast-message";
 
 const UpdateProfile = () => {
-    const { userId } = useLocalSearchParams();
     const router = useRouter();
 
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
     const [firstName, setFirstName] = useState("");
@@ -30,35 +30,9 @@ const UpdateProfile = () => {
     const [gurdianName, setGurdianName] = useState("");
     const [image, setImage] = useState("");
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await axios.get(
-                    `http://192.168.0.102:5000/api/v1/users/${userId}`
-                );
-                const user = res.data?.data;
-
-                if (user) {
-                    setFirstName(user.firstName);
-                    setLastName(user.lastName);
-                    setEmail(user.email);
-                    setPresentAddress(user.presentAddress);
-                    setPermanentAddress(user.permanentAddress);
-                    setDateOfBirth(user.dateOfBirth);
-                    setGurdianName(user.gurdianName);
-                    setImage(user.image);
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                Alert.alert("Error", "Failed to load user info");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUser();
-    }, [userId]);
-
+    const { user, isloading } = useFetchUser();
+    const userId = user?._id;
+    
     const handleImagePick = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -111,8 +85,12 @@ const UpdateProfile = () => {
                 }
             );
 
-            Alert.alert("Success", "Profile updated!");
-            router.replace(`/profile/${userId}`);
+            Toast.show({
+                type: "success",
+                text1: "Profile Updated Successfully 🎉",
+                text2: "Your profile has been updated!",
+            });
+            router.replace(`/profile`);
         } catch (err) {
             console.error(err);
             Alert.alert("Error", "Failed to update profile.");
@@ -121,7 +99,7 @@ const UpdateProfile = () => {
         }
     };
 
-    if (loading) {
+    if (isloading) {
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#5C6AC4" />

@@ -50,9 +50,9 @@ const ProfileMenu = () => {
     const handleSelect = (option) => {
         setMenuVisible(false);
         if (option === "profile") {
-            router.push(`/profile/${userData._id}`);
+            router.push("/profile");
         } else if (option === "update-profile") {
-            router.push(`/updateprofile/${userData._id}`);
+            router.push("/updateprofile");
         } else if (option === "additem") {
             router.push("/additem");
         } else if (option === "uploadeditems") {

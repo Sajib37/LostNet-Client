@@ -8,33 +8,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../../components/ui/header";
-import Loader from "../../components/ui/loader";
+import Header from "../components/ui/header";
+import Loader from "../components/ui/loader";
+import useFetchUser from "../hooks/useFetchUser";
 
 const ProfileScreen = () => {
-    const { userId } = useLocalSearchParams();
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await fetch(
-                    `http://192.168.0.102:5000/api/v1/users/${userId}`
-                );
-                const json = await res.json();
-                setUser(json?.data);
-            } catch (error) {
-                console.error("Error fetching user:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (userId) fetchUser();
-    }, [userId]);
-
+    const { user, loading } = useFetchUser();
     if (loading) {
         return <Loader />;
     }
