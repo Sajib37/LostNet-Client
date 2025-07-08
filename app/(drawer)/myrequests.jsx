@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
@@ -9,35 +8,24 @@ import {
     View,
 } from "react-native";
 import useFetchUser from "../../hooks/useFetchUser";
+import { useQuery } from "@tanstack/react-query";
+import { fetchRequestedItemsByUser } from "../../utils/allQuery";
 
 export default function RequestedItems() {
     const { user, loading: userLoading } = useFetchUser();
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    const fetchRequestedItems = async () => {
-        try {
-            const response = await fetch(
-                `https://lostnet-server.onrender.com/api/v1/item-request/requested-by/${user?._id}`
-            );
-            const data = await response.json();
-            if (data.success) {
-                setRequests(data.data);
-            }
-        } catch (error) {
-            console.error("Error fetching requested items:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        data: requests = [],
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
+        queryKey: ["item-requests-by-requester"],
+        queryFn: () => fetchRequestedItemsByUser(user._id),
+        enabled: !!user?._id, // ✅ wait until user ID exists
+    });
 
-    useEffect(() => {
-        if (user?._id) {
-            fetchRequestedItems();
-        }
-    }, [user]);
-
-    if (userLoading || loading) {
+    if (userLoading || isLoading) {
         return <ActivityIndicator size="large" style={{ marginTop: 30 }} />;
     }
 

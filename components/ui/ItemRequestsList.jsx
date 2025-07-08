@@ -31,6 +31,8 @@ const ItemRequestsList = ({ itemId, itemStatus }) => {
             queryClient.invalidateQueries({ queryKey: ["item"] });
             queryClient.invalidateQueries({ queryKey: ["items"] });
             queryClient.invalidateQueries({ queryKey: ["items-by-userId"] });
+            queryClient.invalidateQueries({ queryKey: ["item-requests-by-requester"] });
+            queryClient.invalidateQueries({ queryKey: ["item-requests-by-item"] });
             
         },
         onError: (error) => {

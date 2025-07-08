@@ -108,3 +108,42 @@ export const updateItemStatus = async ({ itemId, token }) => {
   );
   return res.data;
 };
+
+
+export const fetchRequestedItemsByUser = async (userId) => {
+  const response = await axios.get(
+    `${BASE_URL}/api/v1/item-request/requested-by/${userId}`
+  );
+  return response.data.data;
+};
+
+
+export const postNewItem = async ({ form, imageFile, userId }) => {
+  const payload = {
+    ...form,
+    userId,
+  };
+
+  const formData = new FormData();
+  formData.append("data", JSON.stringify(payload));
+
+  if (imageFile) {
+    formData.append("image", {
+      uri: imageFile.uri,
+      name: imageFile.name,
+      type: imageFile.type,
+    });
+  }
+
+  const res = await axios.post(
+    `${BASE_URL}/api/v1/item/post-item`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};
