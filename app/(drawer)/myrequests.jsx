@@ -18,7 +18,7 @@ export default function RequestedItems() {
     const fetchRequestedItems = async () => {
         try {
             const response = await fetch(
-                `http://192.168.0.102:5000/api/v1/item-request/requested-by/${user?._id}`
+                `https://lostnet-server.onrender.com/api/v1/item-request/requested-by/${user?._id}`
             );
             const data = await response.json();
             if (data.success) {

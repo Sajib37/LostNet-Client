@@ -33,7 +33,7 @@ export default function RegisterScreen() {
         try {
             setLoading(true);
             const response = await axios.post(
-                "http://192.168.0.102:5000/api/v1/users/register",
+                "https://lostnet-server.onrender.com/api/v1/users/register",
                 {
                     firstName,
                     lastName,
@@ -43,15 +43,14 @@ export default function RegisterScreen() {
             );
             console.log(response);
             if (response?.status === 200 || response?.status === 201) {
+                router.replace("/login");
                 Toast.show({
                     type: "success",
                     text1: "Account Created !",
                     text2: "You can now log in",
                 });
 
-                setTimeout(() => {
-                    router.replace("/login");
-                }, 1000);
+                
             }
         } catch (error) {
             Toast.show({

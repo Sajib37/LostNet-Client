@@ -1,46 +1,28 @@
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Dimensions,
     Image,
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
 import Header from "../../components/ui/header";
 import ItemRequestsList from "../../components/ui/ItemRequestsList";
+import { useQuery } from "@tanstack/react-query";
+import { fetchItemById } from "../../utils/allQuery";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function SingleItemScreen() {
     const { id } = useLocalSearchParams();
-    const [item, setItem] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { data: item, isLoading } = useQuery({
+        queryKey: ["item"],
+        queryFn: () => fetchItemById(id),
+    });
 
-    useEffect(() => {
-        const fetchItem = async () => {
-            try {
-                const res = await fetch(
-                    `http://192.168.0.102:5000/api/v1/item/get-single-item/${id}`
-                );
-                const json = await res.json();
-                setItem(json?.data);
-            } catch (err) {
-                console.error("Error loading item", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchItem();
-    }, [id]);
-
-
-    if (loading) {
+    if (isLoading) {
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#5C6AC4" />
@@ -89,9 +71,8 @@ export default function SingleItemScreen() {
                     </Text>
                 </View>
 
-               <ItemRequestsList itemId={id} />
-
-             </ScrollView>
+                <ItemRequestsList itemId={id} itemStatus={item.status} />
+            </ScrollView>
         </View>
     );
 }

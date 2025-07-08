@@ -1,10 +1,8 @@
-import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
-import {  useRouter } from "expo-router";
-import {  useState } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -13,57 +11,88 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import useFetchUser from "../../hooks/useFetchUser";
 import Toast from "react-native-toast-message";
+import Loader from "../../components/ui/loader";
+import { fetchUserById, updateUserProfile } from "../../utils/allQuery";
 
 const UpdateProfile = () => {
     const router = useRouter();
 
-    const [submitting, setSubmitting] = useState(false);
+    const queryClient = useQueryClient();
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [presentAddress, setPresentAddress] = useState("");
-    const [permanentAddress, setPermanentAddress] = useState("");
-    const [dateOfBirth, setDateOfBirth] = useState("");
-    const [gurdianName, setGurdianName] = useState("");
-    const [image, setImage] = useState("");
+    const mutation = useMutation({
+        mutationFn: updateUserProfile,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+            queryClient.invalidateQueries({ queryKey: ["items"] });
+            router.replace("/profile");
+            Toast.show({
+                type: "success",
+                text1: "Profile Updated Successfully 🎉",
+                text2: "Your profile has been updated!",
+            });
+        },
+        onError: (error) => {
+            console.error(error);
+            Toast.show({
+                type: "error",
+                text1: "Profile Update Failed",
+                text2: "Failed to update your profile. Please try again.",
+            });
+        },
+    });
+    const { data: user, isLoading: loadUser } = useQuery({
+        queryKey: ["user"],
+        queryFn: fetchUserById,
+    });
 
-    const { user, isloading } = useFetchUser();
-    const userId = user?._id;
-    
+    const [firstName, setFirstName] = useState(user?.firstName || "");
+    const [lastName, setLastName] = useState(user?.lastName || "");
+    const [email, setEmail] = useState(user?.email || "");
+    const [presentAddress, setPresentAddress] = useState(
+        user?.presentAddress || ""
+    );
+    const [permanentAddress, setPermanentAddress] = useState(
+        user?.permanentAddress || ""
+    );
+    const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth || "");
+    const [gurdianName, setGurdianName] = useState(user?.gurdianName || "");
+    const [image, setImage] = useState(user?.image || "");
+
     const handleImagePick = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             quality: 1,
         });
 
+        console.log(result.assets[0].uri);
+
         if (!result.canceled) {
             setImage(result.assets[0].uri);
         }
     };
 
-    const handleSubmit = async () => {
-        setSubmitting(true);
+    if (loadUser) {
+        return <Loader />;
+    }
+    const userId = user?._id;
 
-        try {
-            const formData = new FormData();
+    const handleSubmit = () => {
+        const payload = {
+            firstName,
+            lastName,
+            email,
+            presentAddress,
+            permanentAddress,
+            dateOfBirth,
+            gurdianName,
+        };
 
-            formData.append(
-                "data",
-                JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    presentAddress,
-                    permanentAddress,
-                    dateOfBirth,
-                    gurdianName,
-                })
-            );
+        const formData = new FormData();
 
-            if (image && image.startsWith("file://")) {
+        formData.append("data", JSON.stringify(payload));
+
+        if (image && image.startsWith("file://")) {
                 const fileName = image.split("/").pop();
                 const match = /\.(\w+)$/.exec(fileName || "");
                 const fileType = match ? `image/${match[1]}` : `image`;
@@ -75,48 +104,21 @@ const UpdateProfile = () => {
                 });
             }
 
-            await axios.patch(
-                `http://192.168.0.102:5000/api/v1/users/${userId}`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-
-            Toast.show({
-                type: "success",
-                text1: "Profile Updated Successfully 🎉",
-                text2: "Your profile has been updated!",
-            });
-            router.replace(`/profile`);
-        } catch (err) {
-            console.error(err);
-            Alert.alert("Error", "Failed to update profile.");
-        } finally {
-            setSubmitting(false);
-        }
+        mutation.mutate({ userId, formData });
     };
-
-    if (isloading) {
-        return (
-            <View style={styles.center}>
-                <ActivityIndicator size="large" color="#5C6AC4" />
-            </View>
-        );
-    }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {/* 🔷 Header Placeholder */}
-            <View style={{ height: 80 }} />
+            <View style={{ height: 30 }} />
 
             <TouchableOpacity
                 onPress={handleImagePick}
                 style={styles.imageWrapper}
             >
-                <Image source={{ uri: image }} style={styles.avatar} />
+                <Image
+                    source={{ uri: image || user?.image }}
+                    style={styles.avatar}
+                />
                 <Text style={styles.changeText}>Change Photo</Text>
             </TouchableOpacity>
 
@@ -162,10 +164,10 @@ const UpdateProfile = () => {
                 <TouchableOpacity
                     style={styles.submitBtn}
                     onPress={handleSubmit}
-                    disabled={submitting}
+                    disabled={mutation.isLoading}
                 >
                     <Text style={styles.submitText}>
-                        {submitting ? "Updating..." : "Save Changes"}
+                        {mutation.isLoading ? "Updating..." : "Save Changes"}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -194,7 +196,6 @@ const Input = ({
 );
 
 export default UpdateProfile;
-
 
 const styles = StyleSheet.create({
     center: {

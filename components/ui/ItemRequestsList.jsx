@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     ActivityIndicator,
     Image,
@@ -10,29 +9,41 @@ import {
     View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { fetchRequestsByItemId, updateItemStatus } from "../../utils/allQuery";
 
-const ItemRequestsList = ({ itemId }) => {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
+const ItemRequestsList = ({ itemId, itemStatus }) => {
+    const { data: requests = [], isLoading } = useQuery({
+        queryKey: ["item-requests-by-item"],
+        queryFn: () => fetchRequestsByItemId(itemId),
+        enabled: !!itemId,
+    });
 
-    useEffect(() => {
-        const fetchRequests = async () => {
-            try {
-                const res = await axios.get(
-                    `http://192.168.0.102:5000/api/v1/item-request/by-item/${itemId}`
-                );
-                setRequests(res.data.data);
-            } catch (error) {
-                console.error("Error fetching requests:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const queryClient = useQueryClient();
 
-        if (itemId) fetchRequests();
-    }, [itemId]);
+    const { mutate: handOverItem, isPending } = useMutation({
+        mutationFn: updateItemStatus,
+        onSuccess: () => {
+            Toast.show({
+                type: "success",
+                text1: "Item Delivered 🎉",
+                text2: "The item has been marked as delivered.",
+            });
+            queryClient.invalidateQueries({ queryKey: ["item"] });
+            queryClient.invalidateQueries({ queryKey: ["items"] });
+            queryClient.invalidateQueries({ queryKey: ["items-by-userId"] });
+            
+        },
+        onError: (error) => {
+            console.error("HandOver Error:", error);
+            Toast.show({
+                type: "error",
+                text1: "Hand Over Failed",
+                text2: "Failed to mark item as delivered.",
+            });
+        },
+    });
 
-    if (loading) {
+    if (isLoading) {
         return (
             <ActivityIndicator
                 size="large"
@@ -41,33 +52,18 @@ const ItemRequestsList = ({ itemId }) => {
             />
         );
     }
-
     const handleHandOver = async () => {
-        try {
-            const token = await AsyncStorage.getItem("accessToken");
-            const res = await axios.patch(
-                `http://192.168.0.102:5000/api/v1/item/${itemId}`,
-                { status: "Delivered" },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+        if (itemStatus === "Delivered") {
             Toast.show({
-                type: "success",
-                text1: "Item Delivered 🎉",
-                text2: "The item has been marked as delivered.",
+                type: "info",
+                text1: "Already Delivered",
+                text2: "This item has already been marked as delivered.",
             });
-            // Optional: Reload the list or update UI here
-        } catch (error) {
-            console.error("HandOver Error:", error);
-            Toast.show({
-                type: "error",
-                text1: "Hand Over Failed",
-                text2: "Failed to mark item as delivered.",
-            });
+            return;
         }
+
+        const token = await AsyncStorage.getItem("accessToken");
+        handOverItem({ itemId, token });
     };
 
     return (
@@ -94,7 +90,10 @@ const ItemRequestsList = ({ itemId }) => {
                                 {req.requestedBy.email}
                             </Text>
 
-                            <TouchableOpacity style={styles.handoverBtn} onPress={handleHandOver}>
+                            <TouchableOpacity
+                                style={styles.handoverBtn}
+                                onPress={handleHandOver}
+                            >
                                 <Text style={styles.handoverText}>
                                     Hand Over
                                 </Text>

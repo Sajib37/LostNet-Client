@@ -32,7 +32,7 @@ export default function LoginScreen() {
 
         try {
             const response = await axios.post(
-                "http://192.168.0.102:5000/api/v1/users/login",
+                "https://lostnet-server.onrender.com/api/v1/users/login",
                 {
                     email,
                     password,
@@ -43,16 +43,14 @@ export default function LoginScreen() {
 
             if (token) {
                 await AsyncStorage.setItem("accessToken", token);
-
+                router.replace("/");
                 Toast.show({
                     type: "success",
                     text1: "Login Successful 🎉",
                     text2: "Welcome back!",
                 });
 
-                setTimeout(() => {
-                    router.replace("/");
-                }, 1000);
+                
             } else {
                 Toast.show({
                     type: "error",

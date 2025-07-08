@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
@@ -15,11 +15,10 @@ import {
     View,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
+import { deleteItemById, fetchItemsByUserId } from "../../utils/allQuery";
 
 const OwnItemsScreen = () => {
-    const [userItems, setUserItems] = useState([]);
     const [userId, setUserId] = useState(null);
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -37,33 +36,37 @@ const OwnItemsScreen = () => {
         fetchUserId();
     }, []);
 
-    useEffect(() => {
-        if (userId) fetchItems();
-    }, [userId]);
+    const { data: items, isLoading } = useQuery({
+        queryKey: ["items-by-userId"],
+        queryFn: () => fetchItemsByUserId(userId),
+    });
 
-    const fetchItems = async () => {
-        try {
-            setLoading(true);
-            const res = await axios.get(
-                `http://192.168.0.102:5000/api/v1/item/user-items/${userId}`
-            );
-            setUserItems(res.data.data || []);
-        } catch (err) {
-            console.error("Fetch error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const queryClient = useQueryClient();
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://192.168.0.102:5000/api/v1/${id}`);
+    const mutation = useMutation({
+        mutationFn: deleteItemById,
+        onSuccess: (_, deletedId) => {
             Alert.alert("Deleted", "Item has been removed");
-            setUserItems((prev) => prev.filter((item) => item._id !== id));
-        } catch (err) {
-            console.error("Delete error:", err);
+            queryClient.invalidateQueries(["items"]);
+            queryClient.invalidateQueries(["item"]);
+            queryClient.invalidateQueries(["items-by-userId"]);
+        },
+        onError: (error) => {
+            console.error("Delete error:", error);
             Alert.alert("Error", "Could not delete item");
-        }
+        },
+    });
+
+    if (isLoading) {
+        return <ActivityIndicator size="large" color="#2C7BE5" />;
+    }
+
+    if (!items || items.length === 0) {
+        return <Text>No items found</Text>;
+    }
+
+    const handleDelete = (id) => {
+        mutation.mutate(id);
     };
 
     const renderItem = ({ item }) => (
@@ -94,13 +97,13 @@ const OwnItemsScreen = () => {
     return (
         <>
             <View style={styles.container}>
-                {loading ? (
+                {isLoading ? (
                     <ActivityIndicator size="large" color="#2C7BE5" />
-                ) : userItems.length === 0 ? (
+                ) : items.length === 0 ? (
                     <Text style={styles.noItems}>No items found</Text>
                 ) : (
                     <FlatList
-                        data={userItems}
+                        data={items}
                         keyExtractor={(item) => item._id}
                         numColumns={2}
                         columnWrapperStyle={{ justifyContent: "space-between" }}

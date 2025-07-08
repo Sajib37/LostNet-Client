@@ -1,3 +1,4 @@
+import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
@@ -15,7 +16,6 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
 
 const AddItemScreen = () => {
     const [form, setForm] = useState({
@@ -91,7 +91,7 @@ const AddItemScreen = () => {
 
         try {
             const res = await axios.post(
-                "http://192.168.0.102:5000/api/v1/item/post-item",
+                "https://lostnet-server.onrender.com/api/v1/item/post-item",
                 formData,
                 {
                     headers: {
@@ -113,9 +113,21 @@ const AddItemScreen = () => {
         }
     };
 
-    const renderInput = (placeholder, value, onChangeText, iconName, multiline = false, height = 50) => (
+    const renderInput = (
+        placeholder,
+        value,
+        onChangeText,
+        iconName,
+        multiline = false,
+        height = 50
+    ) => (
         <View style={styles.inputWrapper}>
-            <Feather name={iconName} size={20} color="#777" style={styles.inputIcon} />
+            <Feather
+                name={iconName}
+                size={20}
+                color="#777"
+                style={styles.inputIcon}
+            />
             <TextInput
                 style={[styles.input, { height }]}
                 placeholder={placeholder}
@@ -132,11 +144,28 @@ const AddItemScreen = () => {
                 <View style={styles.card}>
                     <Text style={styles.title}>Add Found Item</Text>
 
-                    {renderInput("Title", form.title, (text) => handleChange("title", text), "tag")}
+                    {renderInput(
+                        "Title",
+                        form.title,
+                        (text) => handleChange("title", text),
+                        "tag"
+                    )}
 
-                    {renderInput("Description", form.description, (text) => handleChange("description", text), "file-text", true, 100)}
+                    {renderInput(
+                        "Description",
+                        form.description,
+                        (text) => handleChange("description", text),
+                        "file-text",
+                        true,
+                        100
+                    )}
 
-                    {renderInput("Location", form.location, (text) => handleChange("location", text), "map-pin")}
+                    {renderInput(
+                        "Location",
+                        form.location,
+                        (text) => handleChange("location", text),
+                        "map-pin"
+                    )}
 
                     <TouchableOpacity
                         style={styles.datePicker}
@@ -151,7 +180,9 @@ const AddItemScreen = () => {
                         <DateTimePicker
                             value={form.dateOfFound}
                             mode="date"
-                            display={Platform.OS === "ios" ? "spinner" : "default"}
+                            display={
+                                Platform.OS === "ios" ? "spinner" : "default"
+                            }
                             onChange={(event, selectedDate) => {
                                 setShowDatePicker(false);
                                 if (selectedDate) {
@@ -161,18 +192,37 @@ const AddItemScreen = () => {
                         />
                     )}
 
-                    <TouchableOpacity onPress={pickImage} style={styles.imageField}>
+                    <TouchableOpacity
+                        onPress={pickImage}
+                        style={styles.imageField}
+                    >
                         {imageFile ? (
-                            <Image source={{ uri: imageFile.uri }} style={styles.imageInside} />
+                            <Image
+                                source={{ uri: imageFile.uri }}
+                                style={{
+                                    ...styles.imageInside,
+                                    resizeMode: undefined,
+                                }}
+                            />
                         ) : (
                             <View style={styles.uploadPlaceholder}>
-                                <Feather name="upload" size={40} color="#555" style={{ marginBottom: 8 }} />
-                                <Text style={styles.uploadText}>Upload Image</Text>
+                                <Feather
+                                    name="upload"
+                                    size={40}
+                                    color="#555"
+                                    style={{ marginBottom: 8 }}
+                                />
+                                <Text style={styles.uploadText}>
+                                    Upload Image
+                                </Text>
                             </View>
                         )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleSubmit}
+                    >
                         <Text style={styles.buttonText}>Submit Item</Text>
                     </TouchableOpacity>
                 </View>
@@ -259,7 +309,6 @@ const styles = StyleSheet.create({
     imageInside: {
         width: "100%",
         height: "100%",
-        resizeMode: "cover",
     },
     button: {
         backgroundColor: "#2C7BE5",

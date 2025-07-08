@@ -1,5 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import {
     Image,
     ScrollView,
@@ -8,15 +7,22 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../../components/ui/header";
 import Loader from "../../components/ui/loader";
-import useFetchUser from "../../hooks/useFetchUser";
+import {fetchUserById} from "../../utils/allQuery";
+import { useQuery } from "@tanstack/react-query";
 
 const ProfileScreen = () => {
     const router = useRouter();
 
-    const { user, loading } = useFetchUser();
-    if (loading) {
+    const {
+        data: user,
+        isLoading
+    } = useQuery({
+        queryKey: ["user"],
+        queryFn: fetchUserById,
+    });
+
+    if (isLoading) {
         return <Loader />;
     }
 
@@ -32,10 +38,12 @@ const ProfileScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#F4F6FC" }}>
-
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.card}>
-                    <Image source={{ uri: user.image }} style={styles.avatar} />
+                    <Image
+                        source={{ uri: user?.image }}
+                        style={styles.avatar}
+                    />
                     <Text style={styles.name}>
                         {user.firstName} {user.lastName}
                     </Text>
@@ -56,9 +64,7 @@ const ProfileScreen = () => {
                     </View>
 
                     <TouchableOpacity
-                        onPress={() =>
-                            router.push(`/updateprofile`)
-                        }
+                        onPress={() => router.push(`/updateprofile`)}
                         style={styles.button}
                     >
                         <Text style={styles.buttonText}>Update Profile</Text>

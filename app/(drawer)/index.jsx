@@ -1,7 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
     FlatList,
     Image,
     StyleSheet,
@@ -11,31 +9,26 @@ import {
 } from "react-native";
 import Loader from "../../components/ui/loader";
 import { useProtectedRoute } from "../../hooks/useProtectedRoute";
+import { useQuery } from "@tanstack/react-query";
+import { fetchItems } from "../../utils/allQuery";
 
 const Index = () => {
     const { authLoading } = useProtectedRoute();
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
-    useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                const res = await fetch(
-                    "http://192.168.0.102:5000/api/v1/item"
-                );
-                const json = await res.json();
-                setItems(json?.data || []);
-            } catch (err) {
-                console.error("Error fetching items:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchItems();
-    }, []);
+    const {
+        data: items = [],
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
+        queryKey: ["items"],
+        queryFn: fetchItems,
+    });
 
     if (authLoading) {
+        return <Loader />;
+    }
+    if (isLoading) {
         return <Loader />;
     }
 
@@ -52,11 +45,10 @@ const Index = () => {
             </TouchableOpacity>
         </View>
     );
-
-    if (loading) {
+    if (isError) {
         return (
             <View style={styles.center}>
-                <ActivityIndicator size="large" color="#5C6AC4" />
+                <Text>Error: {error.message}</Text>
             </View>
         );
     }
@@ -91,11 +83,11 @@ const styles = StyleSheet.create({
     heading: {
         fontSize: 22,
         fontWeight: "700",
-        color: "#3F51B5", 
+        color: "#3F51B5",
         marginTop: 20,
         marginBottom: 14,
         textAlign: "center",
-        fontFamily: "System", 
+        fontFamily: "System",
         letterSpacing: 0.5,
     },
     card: {
@@ -108,7 +100,7 @@ const styles = StyleSheet.create({
         elevation: 4,
         padding: 12,
         marginVertical: 8,
-        width: "48%", // Two columns with spacing
+        width: "48%", 
     },
     image: {
         width: "100%",

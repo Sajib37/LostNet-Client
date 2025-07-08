@@ -1,5 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -11,81 +12,49 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Header from "../../components/ui/header";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import Header from "../../components/ui/header";
+import { fetchItemById, requestItemById } from "../../utils/allQuery";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function SingleItemScreen() {
     const { id } = useLocalSearchParams();
-    const [item, setItem] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetchItem = async () => {
-            try {
-                const res = await fetch(
-                    `http://192.168.0.102:5000/api/v1/item/get-single-item/${id}`
-                );
-                const json = await res.json();
-                setItem(json?.data);
-            } catch (err) {
-                console.error("Error loading item", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const { data: item, isLoading } = useQuery({
+        queryKey: ["item"],
+        queryFn: () => fetchItemById(id),
+    });
 
-        fetchItem();
-    }, [id]);
-
-    const handleRequest = async (itemId) => {
-        try {
-            const token = await AsyncStorage.getItem("accessToken");
-            if (!token) {
-                Alert.alert("Unauthorized", "Please login to request item.");
-                return;
-            }
-
-            const decoded = jwtDecode(token);
-            const requestedBy = decoded?.id;
-
-            if (!requestedBy) {
-                Alert.alert("Error", "User ID not found.");
-                return;
-            }
-
-            const payload = {
-                itemId,
-                requestedBy,
-            };
-
-            await axios.post(
-                "http://192.168.0.102:5000/api/v1/item-request",
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // optional, if backend requires auth
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
+    const { mutate: requestItem, isPending } = useMutation({
+        mutationFn: requestItemById,
+        onSuccess: () => {
+            queryClient.invalidateQueries(["item-requests-by-id"]);
+            queryClient.invalidateQueries(["item-requests-by-user"]);
             Toast.show({
                 type: "success",
                 text1: "Request Sent",
                 text2: "You have requested this item.",
             });
-        } catch (error) {
+        },
+        onError: (error) => {
             console.error("Request failed:", error);
             Alert.alert("Error", "Failed to send request. Try again.");
+        },
+    });
+
+    const handleRequest = async (itemId) => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) {
+            Alert.alert("Unauthorized", "Please login to request item.");
+            return;
         }
+
+        requestItem({ itemId, token });
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#5C6AC4" />
