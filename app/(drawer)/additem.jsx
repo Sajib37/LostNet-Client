@@ -4,179 +4,233 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Image,
-  ActivityIndicator,
-  Platform,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { useState, useEffect } from "react";
-import { postNewItem } from "../../utils/allQuery"; 
+import { KeyboardAvoidingView } from "react-native-web";
+import { postNewItem } from "../../utils/allQuery";
 
 const AddItemScreen = () => {
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    location: "",
-    dateOfFound: new Date(),
-  });
-
-  const [imageFile, setImageFile] = useState(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const token = await AsyncStorage.getItem("accessToken");
-        if (!token) return;
-        const decoded = jwtDecode(token);
-        setUserId(decoded?.id);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchUserId();
-  }, []);
-
-  const { mutate: submitItem, isPending } = useMutation({
-    mutationFn: postNewItem,
-    onSuccess: () => {
-      Toast.show({
-        type: "success",
-        text1: "Item Posted",
-        text2: "Your item was added successfully!",
-      });
-
-      setForm({
+    const [form, setForm] = useState({
         title: "",
         description: "",
         location: "",
         dateOfFound: new Date(),
-      });
-      setImageFile(null);
-
-      queryClient.invalidateQueries(["items"]);
-      queryClient.invalidateQueries(["item"]);
-      queryClient.invalidateQueries(["items-by-userId"]);
-    },
-    onError: (error) => {
-      console.error("Post error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to Post",
-        text2: "Something went wrong while posting the item.",
-      });
-    },
-  });
-
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      base64: false,
     });
 
-    if (!result.canceled && result.assets.length > 0) {
-      const asset = result.assets[0];
-      const uriParts = asset.uri.split(".");
-      const fileType = uriParts[uriParts.length - 1];
-      setImageFile({
-        uri: asset.uri,
-        name: `upload.${fileType}`,
-        type: `image/${fileType}`,
-      });
-    }
-  };
+    const [imageFile, setImageFile] = useState(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const queryClient = useQueryClient();
 
-  const handleChange = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const token = await AsyncStorage.getItem("accessToken");
+                if (!token) return;
+                const decoded = jwtDecode(token);
+                setUserId(decoded?.id);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchUserId();
+    }, []);
 
-  const handleSubmit = async () => {
-    if (!userId) {
-      Alert.alert("Error", "User not authenticated");
-      return;
-    }
+    const { mutate: submitItem, isPending } = useMutation({
+        mutationFn: postNewItem,
+        onSuccess: () => {
+            Toast.show({
+                type: "success",
+                text1: "Item Posted",
+                text2: "Your item was added successfully!",
+            });
 
-    submitItem({ form, imageFile, userId });
-  };
+            setForm({
+                title: "",
+                description: "",
+                location: "",
+                dateOfFound: new Date(),
+            });
+            setImageFile(null);
 
-  const renderInput = (
-    placeholder,
-    value,
-    onChangeText,
-    iconName,
-    multiline = false,
-    height = 50
-  ) => (
-    <View style={styles.inputWrapper}>
-      <Feather name={iconName} size={20} color="#777" style={styles.inputIcon} />
-      <TextInput
-        style={[styles.input, { height }]}
-        placeholder={placeholder}
-        multiline={multiline}
-        value={value}
-        onChangeText={onChangeText}
-      />
-    </View>
-  );
+            queryClient.invalidateQueries(["items"]);
+            queryClient.invalidateQueries(["item"]);
+            queryClient.invalidateQueries(["items-by-userId"]);
+        },
+        onError: (error) => {
+            console.error("Post error:", error);
+            Toast.show({
+                type: "error",
+                text1: "Failed to Post",
+                text2: "Something went wrong while posting the item.",
+            });
+        },
+    });
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Add Found Item</Text>
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 1,
+            base64: false,
+        });
 
-        {renderInput("Title", form.title, (text) => handleChange("title", text), "tag")}
-        {renderInput("Description", form.description, (text) => handleChange("description", text), "file-text", true, 100)}
-        {renderInput("Location", form.location, (text) => handleChange("location", text), "map-pin")}
+        if (!result.canceled && result.assets.length > 0) {
+            const asset = result.assets[0];
+            const uriParts = asset.uri.split(".");
+            const fileType = uriParts[uriParts.length - 1];
+            setImageFile({
+                uri: asset.uri,
+                name: `upload.${fileType}`,
+                type: `image/${fileType}`,
+            });
+        }
+    };
 
-        <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
-          <Text style={styles.dateText}>{form.dateOfFound.toDateString()}</Text>
-        </TouchableOpacity>
+    const handleChange = (key, value) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
+    };
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={form.dateOfFound}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                handleChange("dateOfFound", selectedDate);
-              }
-            }}
-          />
-        )}
+    const handleSubmit = async () => {
+        if (!userId) {
+            Alert.alert("Error", "User not authenticated");
+            return;
+        }
 
-        <TouchableOpacity onPress={pickImage} style={styles.imageField}>
-          {imageFile ? (
-            <Image source={{ uri: imageFile.uri }} style={{ ...styles.imageInside }} />
-          ) : (
-            <View style={styles.uploadPlaceholder}>
-              <Feather name="upload" size={40} color="#555" style={{ marginBottom: 8 }} />
-              <Text style={styles.uploadText}>Upload Image</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        submitItem({ form, imageFile, userId });
+    };
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isPending}>
-          {isPending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Submit Item</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  );
+    const renderInput = (
+        placeholder,
+        value,
+        onChangeText,
+        iconName,
+        multiline = false,
+        height = 50
+    ) => (
+        <View style={styles.inputWrapper}>
+            <Feather
+                name={iconName}
+                size={20}
+                color="#777"
+                style={styles.inputIcon}
+            />
+            <TextInput
+                style={[styles.input, { height }]}
+                placeholder={placeholder}
+                multiline={multiline}
+                value={value}
+                onChangeText={onChangeText}
+            />
+        </View>
+    );
+
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+        >
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.card}>
+                    <Text style={styles.title}>Add Found Item</Text>
+
+                    {renderInput(
+                        "Title",
+                        form.title,
+                        (text) => handleChange("title", text),
+                        "tag"
+                    )}
+                    {renderInput(
+                        "Description",
+                        form.description,
+                        (text) => handleChange("description", text),
+                        "file-text",
+                        true,
+                        100
+                    )}
+                    {renderInput(
+                        "Location",
+                        form.location,
+                        (text) => handleChange("location", text),
+                        "map-pin"
+                    )}
+
+                    <TouchableOpacity
+                        style={styles.datePicker}
+                        onPress={() => setShowDatePicker(true)}
+                    >
+                        <Text style={styles.dateText}>
+                            {form.dateOfFound.toDateString()}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={form.dateOfFound}
+                            mode="date"
+                            display={
+                                Platform.OS === "ios" ? "spinner" : "default"
+                            }
+                            onChange={(event, selectedDate) => {
+                                setShowDatePicker(false);
+                                if (selectedDate) {
+                                    handleChange("dateOfFound", selectedDate);
+                                }
+                            }}
+                        />
+                    )}
+
+                    <TouchableOpacity
+                        onPress={pickImage}
+                        style={styles.imageField}
+                    >
+                        {imageFile ? (
+                            <Image
+                                source={{ uri: imageFile.uri }}
+                                style={{ ...styles.imageInside }}
+                            />
+                        ) : (
+                            <View style={styles.uploadPlaceholder}>
+                                <Feather
+                                    name="upload"
+                                    size={40}
+                                    color="#555"
+                                    style={{ marginBottom: 8 }}
+                                />
+                                <Text style={styles.uploadText}>
+                                    Upload Image
+                                </Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleSubmit}
+                        disabled={isPending}
+                    >
+                        {isPending ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Submit Item</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
 };
 
 export default AddItemScreen;

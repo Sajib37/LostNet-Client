@@ -45,6 +45,14 @@ export default function SingleItemScreen() {
     });
 
     const handleRequest = async (itemId) => {
+        if (item.status !== "Available") {
+            Toast.show({
+                type: "error",
+                text1: "Request Failed",
+                text2: "This item is not available for request.",
+            });
+            return;
+        }
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) {
             Alert.alert("Unauthorized", "Please login to request item.");
@@ -72,6 +80,7 @@ export default function SingleItemScreen() {
                 <Image source={{ uri: item.image }} style={styles.image} />
 
                 <Text style={styles.title}>{item.title}</Text>
+
                 <View
                     style={[
                         styles.statusBadge,
@@ -86,16 +95,19 @@ export default function SingleItemScreen() {
                     <Text style={styles.statusText}>{item.status}</Text>
                 </View>
 
+                {/* Location */}
                 <View style={styles.card}>
                     <Text style={styles.label}>📍 Location</Text>
                     <Text style={styles.value}>{item.location}</Text>
                 </View>
 
+                {/* Description */}
                 <View style={styles.card}>
                     <Text style={styles.label}>📝 Description</Text>
                     <Text style={styles.value}>{item.description}</Text>
                 </View>
 
+                {/* Date */}
                 <View style={styles.card}>
                     <Text style={styles.label}>📅 Found On</Text>
                     <Text style={styles.value}>
@@ -103,6 +115,24 @@ export default function SingleItemScreen() {
                     </Text>
                 </View>
 
+                {/* 👤 Owner Info */}
+                <View style={styles.card}>
+                    <Text style={styles.label}>🙋 Found By</Text>
+                    <Text style={styles.value}>
+                        {item.userId?.firstName || "N/A"}{" "}
+                        {item.userId?.lastName || ""}
+                    </Text>
+                    <Text style={styles.label}>📧 Email</Text>
+                    <Text style={styles.value}>
+                        {item.userId?.email || "N/A"}
+                    </Text>
+                    <Text style={styles.label}>🏠 Address</Text>
+                    <Text style={styles.value}>
+                        {item.userId?.presentAddress || "N/A"}
+                    </Text>
+                </View>
+
+                {/* Request Button */}
                 <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => handleRequest(id)}

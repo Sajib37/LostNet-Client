@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         marginBottom: 10,
         backgroundColor: "#eee",
-        borderWidth: 4,
-        borderColor: "green",
+        borderWidth: 2,
+        borderColor: "#808080",
     },
     userName: {
         fontSize: 16,

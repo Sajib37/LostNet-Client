@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
     Image,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,6 +13,7 @@ import {
     View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { KeyboardAvoidingView } from "react-native-web";
 import Loader from "../../components/ui/loader";
 import { fetchUserById, updateUserProfile } from "../../utils/allQuery";
 
@@ -93,85 +95,91 @@ const UpdateProfile = () => {
         formData.append("data", JSON.stringify(payload));
 
         if (image && image.startsWith("file://")) {
-                const fileName = image.split("/").pop();
-                const match = /\.(\w+)$/.exec(fileName || "");
-                const fileType = match ? `image/${match[1]}` : `image`;
+            const fileName = image.split("/").pop();
+            const match = /\.(\w+)$/.exec(fileName || "");
+            const fileType = match ? `image/${match[1]}` : `image`;
 
-                formData.append("image", {
-                    uri: image,
-                    name: fileName,
-                    type: fileType,
-                });
-            }
+            formData.append("image", {
+                uri: image,
+                name: fileName,
+                type: fileType,
+            });
+        }
 
         mutation.mutate({ userId, formData });
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <View style={{ height: 30 }} />
-
-            <TouchableOpacity
-                onPress={handleImagePick}
-                style={styles.imageWrapper}
-            >
-                <Image
-                    source={{ uri: image || user?.image }}
-                    style={styles.avatar}
-                />
-                <Text style={styles.changeText}>Change Photo</Text>
-            </TouchableOpacity>
-
-            <View style={styles.form}>
-                <Input
-                    label="First Name"
-                    value={firstName}
-                    onChange={setFirstName}
-                />
-                <Input
-                    label="Last Name"
-                    value={lastName}
-                    onChange={setLastName}
-                />
-                <Input
-                    label="Email"
-                    value={email}
-                    onChange={setEmail}
-                    keyboardType="email-address"
-                />
-                <Input
-                    label="Guardian Name"
-                    value={gurdianName}
-                    onChange={setGurdianName}
-                />
-                <Input
-                    label="Date of Birth"
-                    value={dateOfBirth}
-                    onChange={setDateOfBirth}
-                    placeholder="YYYY-MM-DD"
-                />
-                <Input
-                    label="Present Address"
-                    value={presentAddress}
-                    onChange={setPresentAddress}
-                />
-                <Input
-                    label="Permanent Address"
-                    value={permanentAddress}
-                    onChange={setPermanentAddress}
-                />
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}>
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={{ height: 30 }} />
 
                 <TouchableOpacity
-                    style={styles.submitBtn}
-                    onPress={handleSubmit}
-                    disabled={mutation.isLoading}
+                    onPress={handleImagePick}
+                    style={styles.imageWrapper}
                 >
-                    <Text style={styles.submitText}>
-                        {mutation.isLoading ? "Updating..." : "Save Changes"}
-                    </Text>
+                    <Image
+                        source={{ uri: image || user?.image }}
+                        style={styles.avatar}
+                    />
+                    <Text style={styles.changeText}>Change Photo</Text>
                 </TouchableOpacity>
-            </View>
-        </ScrollView>
+
+                <View style={styles.form}>
+                    <Input
+                        label="First Name"
+                        value={firstName}
+                        onChange={setFirstName}
+                    />
+                    <Input
+                        label="Last Name"
+                        value={lastName}
+                        onChange={setLastName}
+                    />
+                    <Input
+                        label="Email"
+                        value={email}
+                        onChange={setEmail}
+                        keyboardType="email-address"
+                    />
+                    <Input
+                        label="Guardian Name"
+                        value={gurdianName}
+                        onChange={setGurdianName}
+                    />
+                    <Input
+                        label="Date of Birth"
+                        value={dateOfBirth}
+                        onChange={setDateOfBirth}
+                        placeholder="YYYY-MM-DD"
+                    />
+                    <Input
+                        label="Present Address"
+                        value={presentAddress}
+                        onChange={setPresentAddress}
+                    />
+                    <Input
+                        label="Permanent Address"
+                        value={permanentAddress}
+                        onChange={setPermanentAddress}
+                    />
+
+                    <TouchableOpacity
+                        style={styles.submitBtn}
+                        onPress={handleSubmit}
+                        disabled={mutation.isLoading}
+                    >
+                        <Text style={styles.submitText}>
+                            {mutation.isLoading
+                                ? "Updating..."
+                                : "Save Changes"}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 

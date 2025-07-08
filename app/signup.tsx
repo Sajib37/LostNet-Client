@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import {
     Alert,
     ImageBackground,
+    KeyboardAvoidingView,
+    Platform,
     StatusBar,
     StyleSheet,
     Text,
@@ -49,8 +51,6 @@ export default function RegisterScreen() {
                     text1: "Account Created !",
                     text2: "You can now log in",
                 });
-
-                
             }
         } catch (error) {
             Toast.show({
@@ -70,83 +70,89 @@ export default function RegisterScreen() {
             style={styles.background}
             resizeMode="cover"
         >
-            <StatusBar barStyle="light-content" />
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+            >
+                <StatusBar barStyle="light-content" />
 
-            <BlurView intensity={50} tint="light" style={styles.card}>
-                <Text style={styles.title}>Create Account</Text>
+                <BlurView intensity={50} tint="light" style={styles.card}>
+                    <Text style={styles.title}>Create Account</Text>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="account-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="First Name"
-                        placeholderTextColor="#888"
-                        value={firstName}
-                        onChangeText={setFirstName}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="account-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="First Name"
+                            placeholderTextColor="#888"
+                            value={firstName}
+                            onChangeText={setFirstName}
+                        />
+                    </View>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="account-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Last Name"
-                        placeholderTextColor="#888"
-                        value={lastName}
-                        onChangeText={setLastName}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="account-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Last Name"
+                            placeholderTextColor="#888"
+                            value={lastName}
+                            onChangeText={setLastName}
+                        />
+                    </View>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="email-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        placeholderTextColor="#888"
-                        keyboardType="email-address"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="email-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Email"
+                            placeholderTextColor="#888"
+                            keyboardType="email-address"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                    </View>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="lock-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Password"
-                        placeholderTextColor="#888"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="lock-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Password"
+                            placeholderTextColor="#888"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                    </View>
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleRegister}
-                    disabled={loading}
-                >
-                    <Text style={styles.buttonText}>
-                        {loading ? "Registering..." : "Register"}
-                    </Text>
-                </TouchableOpacity>
-            </BlurView>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleRegister}
+                        disabled={loading}
+                    >
+                        <Text style={styles.buttonText}>
+                            {loading ? "Registering..." : "Register"}
+                        </Text>
+                    </TouchableOpacity>
+                </BlurView>
+            </KeyboardAvoidingView>
         </ImageBackground>
     );
 }

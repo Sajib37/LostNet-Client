@@ -6,6 +6,8 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     ImageBackground,
+    KeyboardAvoidingView,
+    Platform,
     StatusBar,
     StyleSheet,
     Text,
@@ -49,8 +51,6 @@ export default function LoginScreen() {
                     text1: "Login Successful 🎉",
                     text2: "Welcome back!",
                 });
-
-                
             } else {
                 Toast.show({
                     type: "error",
@@ -75,52 +75,63 @@ export default function LoginScreen() {
             resizeMode="cover"
         >
             <StatusBar barStyle="light-content" />
-            <BlurView intensity={50} tint="light" style={styles.card}>
-                <Text style={styles.title}>Welcome Back</Text>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+            >
+                <BlurView intensity={50} tint="light" style={styles.card}>
+                    <Text style={styles.title}>Welcome Back</Text>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="email-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        placeholderTextColor="#888"
-                        keyboardType="email-address"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="email-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Email"
+                            placeholderTextColor="#888"
+                            keyboardType="email-address"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                    </View>
 
-                <View style={styles.inputWrapper}>
-                    <MaterialCommunityIcons
-                        name="lock-outline"
-                        size={20}
-                        color="#5C6AC4"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Password"
-                        placeholderTextColor="#888"
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                </View>
+                    <View style={styles.inputWrapper}>
+                        <MaterialCommunityIcons
+                            name="lock-outline"
+                            size={20}
+                            color="#5C6AC4"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Password"
+                            placeholderTextColor="#888"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                    </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.register}>
-                    Don&apos;t have an account?
-                    <TouchableOpacity onPress={() => router.push("/signup")}>
-                        <Text style={styles.link}> Register</Text>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleLogin}
+                    >
+                        <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
-                </Text>
-            </BlurView>
+
+                    <Text style={styles.register}>
+                        Don&apos;t have an account?
+                        <TouchableOpacity
+                            onPress={() => router.push("/signup")}
+                        >
+                            <Text style={styles.link}> Register</Text>
+                        </TouchableOpacity>
+                    </Text>
+                </BlurView>
+            </KeyboardAvoidingView>
         </ImageBackground>
     );
 }
